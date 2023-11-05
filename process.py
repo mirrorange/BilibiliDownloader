@@ -1,7 +1,7 @@
 # 对下载的内容进行合并处理
 import os
 from os import path
-import Settings
+import settings
 
 
 def merge_video(video, audio, output):
@@ -18,7 +18,7 @@ def merge_video(video, audio, output):
         return False
 
 
-def auto_merge(filepath, delete=Settings.autodelete):
+def auto_merge(filepath, delete=settings.autodelete):
     """自动合并视频和音频文件"""
     # 判断是否为视频文件
     if filepath.endswith("_video.m4s"):

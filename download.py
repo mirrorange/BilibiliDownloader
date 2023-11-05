@@ -1,10 +1,10 @@
 from xmlrpc.client import ServerProxy
 import time
-import GetVideoInfo
-import GetBangumiInfo
-import GetDownloadUrl
-import Settings
-import Process
+import video_info
+import bangumi_info
+import download_info
+import settings
+import process
 import os
 from os import path
 
@@ -21,13 +21,13 @@ def aria2_download_status(gid):
     """获取下载状态"""
     if gid == 0:
         return "complete"
-    s = ServerProxy(Settings.rpcserver)
+    s = ServerProxy(settings.rpcserver)
     return s.aria2.tellStatus(gid, ["status"])["status"]
 
 
 def aria2_wait(gid):
     """等待下载完成"""
-    s = ServerProxy(Settings.rpcserver)
+    s = ServerProxy(settings.rpcserver)
     while True:
         time.sleep(1)
         status = s.aria2.tellStatus(gid, ["status", "downloadSpeed", "completedLength", "totalLength", "files"])
@@ -62,10 +62,10 @@ def aria2_check_file(filepath):
         return True
 
 
-def aria2_download(url, sync=True, out="", dir=Settings.dir):
+def aria2_download(url, sync=True, out="", dir=settings.dir):
     """通过Aria2下载文件"""
-    s = ServerProxy(Settings.rpcserver)
-    ua = Settings.ua
+    s = ServerProxy(settings.rpcserver)
+    ua = settings.ua
     ref = "https://www.bilibili.com/"
     if out.strip() != "":
         if not aria2_check_file(path.join(dir, out)):
@@ -90,20 +90,20 @@ def download_by_list(video_list, sessdata, quality=-1):
     for video in video_list:
         if len(video_list) == 1:
             file_name = prepare_file_name(video["title"])
-            folder_name = Settings.dir
+            folder_name = settings.dir
         else:
             file_name = prepare_file_name(video["subtitle"])
-            folder_name = path.join(Settings.dir, prepare_file_name(video["title"]))
+            folder_name = path.join(settings.dir, prepare_file_name(video["title"]))
         if not check_file(path.join(folder_name, file_name)):
             print("DownloadVideo: 下载已完成，跳过下载")
             continue
-        url_obj = GetDownloadUrl.get_download_url(cid=video["cid"], aid=video["aid"], bvid=video["bvid"], quality=quality, sessdata=sessdata)
+        url_obj = download_info.get_download_url(cid=video["cid"], aid=video["aid"], bvid=video["bvid"], quality=quality, sessdata=sessdata)
         if url_obj["code"] == 0:
             video_gid = aria2_download(url=url_obj["videoUrl"], out=file_name + "_video.m4s", dir=folder_name)
             audio_gid = aria2_download(url=url_obj["audioUrl"], out=file_name + "_audio.m4s", dir=folder_name)
-            if Settings.syncdownload and Settings.automerge:
+            if settings.syncdownload and settings.automerge:
                 if aria2_download_status(video_gid) == "complete" and aria2_download_status(audio_gid) == "complete":
-                    Process.auto_merge(path.join(folder_name, file_name) + "_video.m4s")
+                    process.auto_merge(path.join(folder_name, file_name) + "_video.m4s")
             gid_list.append({"code": url_obj["code"], "videoGid": video_gid, "audioGid": audio_gid})
             if code == 1:
                 code = 0
@@ -130,46 +130,46 @@ def download_range(download_list):
 
 def download_by_aid(aid, sessdata, quality=-1):
     """通过AVID下载"""
-    data = GetVideoInfo.get_page_list(aid=aid, sessdata=sessdata)
+    data = video_info.get_page_list(aid=aid, sessdata=sessdata)
     download_list = download_range(data["results"])
     return download_by_list(video_list=download_list, quality=quality, sessdata=sessdata)
 
 
 def download_by_bvid(bvid, sessdata, quality=-1):
     """通过BVID下载"""
-    data = GetVideoInfo.get_page_list(bvid=bvid, sessdata=sessdata)
+    data = video_info.get_page_list(bvid=bvid, sessdata=sessdata)
     download_list = download_range(data["results"])
     return download_by_list(video_list=download_list, quality=quality, sessdata=sessdata)
 
 
 def download_by_mdid(mdid, sessdata, quality=-1):
     """通过MDID下载"""
-    data = GetBangumiInfo.get_media_info(mdid=mdid, sessdata=sessdata)
+    data = bangumi_info.get_media_info(mdid=mdid, sessdata=sessdata)
     download_list = download_range(data["results"])
     return download_by_list(video_list=download_list, quality=quality, sessdata=sessdata)
 
 
 def download_by_ssid(ssid, sessdata, quality=-1):
     """通过SSID下载"""
-    data = GetBangumiInfo.get_bangumi_info(ssid=ssid, sessdata=sessdata)
+    data = bangumi_info.get_bangumi_info(ssid=ssid, sessdata=sessdata)
     download_list = download_range(data["results"])
     return download_by_list(video_list=download_list, quality=quality, sessdata=sessdata)
 
 
 def download_by_epid(epid, sessdata, quality=-1):
     """通过EPID下载"""
-    data = GetBangumiInfo.get_bangumi_info(epid=epid, sessdata=sessdata)
+    data = bangumi_info.get_bangumi_info(epid=epid, sessdata=sessdata)
     download_list = download_range(data["results"])
     return download_by_list(video_list=download_list, quality=quality, sessdata=sessdata)
 
 
 if __name__ == '__main__':
-    if Settings.sessdata != "":
-        sessdata = Settings.sessdata
+    if settings.sessdata != "":
+        sessdata = settings.sessdata
     else:
         sessdata = input("请输入SESSDATA: ")
-    if Settings.quality != 0:
-        quality = Settings.quality
+    if settings.quality != 0:
+        quality = settings.quality
     else:
         qstr = input("请输入清晰度代码（不填将自动选择最高画质）: ")
         if qstr.strip() == "":

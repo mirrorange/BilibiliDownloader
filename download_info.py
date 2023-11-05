@@ -1,6 +1,6 @@
 # 由 AID，BVID，CID 获取某一视频的下载地址
 import requests
-import Settings
+import settings
 
 def get_quality(cid, aid="", bvid="", sessdata=""):
     # 检查是否提供了AVID或BVID
@@ -64,7 +64,7 @@ def get_download_url(cid, quality=-1, aid="", bvid="", sessdata=""):
     if jsonobj["code"] == 0:
         video_url = [jsonobj["data"]["dash"]["video"][0]["baseUrl"]]
         audio_url = [jsonobj["data"]["dash"]["audio"][0]["baseUrl"]]
-        if Settings.backupurl:
+        if settings.backupurl:
             video_url += jsonobj["data"]["dash"]["video"][0]["backupUrl"]
             audio_url += jsonobj["data"]["dash"]["audio"][0]["backupUrl"]
         quality_num = jsonobj["data"]["dash"]["video"][0]["id"]

@@ -1,6 +1,6 @@
 # 由 AID,BVID 获取视频信息
 import requests
-import Settings
+import settings
 
 
 def get_page_list(aid="", bvid="", sessdata=""):
@@ -46,8 +46,8 @@ def get_page_list(aid="", bvid="", sessdata=""):
 
 
 if __name__ == '__main__':
-    if Settings.sessdata:
-        sessdata = Settings.sessdata
+    if settings.sessdata:
+        sessdata = settings.sessdata
     else:
         sessdata = input("请输入SESSDATA: ")
     id = input("请输入BVID或AID: ")

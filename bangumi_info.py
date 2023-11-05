@@ -1,6 +1,6 @@
 # 由 MDID,SSID,EPID 获取视频信息
 import requests
-import Settings
+import settings
 
 
 def get_media_info(mdid, sessdata=""):
@@ -62,7 +62,7 @@ def get_bangumi_info(ssid="", epid="", sessdata=""):
 
 
 if __name__ == '__main__':
-    sessdata = Settings.sessdata or input("请输入SESSDATA: ")
+    sessdata = settings.sessdata or input("请输入SESSDATA: ")
     id = input("请输入SSID或EPID或MDID: ")
     if id.startswith("ss") or id.startswith("SS"):
         ssid = id[2:]
